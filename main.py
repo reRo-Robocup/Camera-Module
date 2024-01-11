@@ -1,6 +1,8 @@
 import sensor, time, image, pyb, ulab
 from ulab import numpy as np
 
+import uartProtocol
+
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
@@ -12,7 +14,6 @@ sensor.set_auto_whitebal(False)
 sensor.set_vflip(False)
 sensor.set_hmirror(True)
 
-uart = pyb.UART(3, 19200)
 usb = pyb.USB_VCP()
 clock = time.clock()
 
@@ -63,6 +64,8 @@ while True:
             img.draw_cross(160,120,(0,0,0))
             img.draw_circle(160,120,120,(255,255,255))
             img.draw_line(160,120,data[1],data[2],(0,0,0))
+            
+        uartProtocol.sendData()
 
         uart.write(str(ball)+' '+str(dis)+'\0')
         # uart.write(str(ball)+' '+str(dis)+'\0')
