@@ -1,8 +1,6 @@
 import sensor, time, image, pyb, ulab
 from ulab import numpy as np
 
-import uartProtocol
-
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
@@ -16,6 +14,33 @@ sensor.set_hmirror(True)
 
 usb = pyb.USB_VCP()
 clock = time.clock()
+
+header = [0xFF, 0xFF, 0xFD, 0x00]
+
+def sendData(BallAngle, YelAngle, BlueAngle, BallDis, YelDis, BlueDis, BallTF, YelTF, BlueTF):
+    # ヘッダー送信
+    for i in range (4):
+        uart.write(header[i])
+
+    # 配列に代入
+    Angles = [BallAngle, YelAngle, BlueAngle]
+    Distance = [BallDis, YelDis, BlueDis]
+    disable = [BallTF, YelTF, BlueTF]
+
+    # Angles送信 16bit
+    for i in range (3):
+        _data_H = (Angles[i] & 0xFF00) >> 8
+        _data_L = (Angles[i] & 0x00FF) >> 0
+        uart.write(_data_H)
+        uart.write(_data_L)
+
+    # Distance送信 8bit
+    for i in range (3):
+        uart.write(Distance[i])
+
+    # disable送信 1bit (下位5bit余り)
+    _data = ((disable[0] >> 8) | (disable[1] >> 7) | (disable[2] >> 6)) | 0x0000
+    uart.write(_data)
 
 distance = 0
 angle = 0
@@ -64,7 +89,7 @@ while True:
             img.draw_cross(160,120,(0,0,0))
             img.draw_circle(160,120,120,(255,255,255))
             img.draw_line(160,120,data[1],data[2],(0,0,0))
-            
+
         uartProtocol.sendData()
 
         uart.write(str(ball)+' '+str(dis)+'\0')
