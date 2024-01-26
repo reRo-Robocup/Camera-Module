@@ -17,7 +17,7 @@ def sendData(BallAngle, YelAngle, BlueAngle, BallDis, YelDis, BlueDis, BallTF, Y
     for i in range (3):
         _data_H = (Angles[i] & 0xFF00) >> 8
         _data_L = (Angles[i] & 0x00FF) >> 0
-        uart.write(_data_H)
+        uart.write(_data_H)_
         uart.write(_data_L)
         
     # Distance送信 8bit
