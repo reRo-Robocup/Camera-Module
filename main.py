@@ -17,34 +17,36 @@ clock = time.clock()
 uart = pyb.UART(3, 19200)
 uart.init(115200, bits=8, parity=None, stop=1)
 
+header = (0xFF, 0xFF, 0xFD, 0x00)
+
 # P4-TX P5-RX
 
-def sendData():
+def sendData(angles, distances, enables):
+    
     # ヘッダー送信
-    uart.writechar(0xFF);
-    uart.writechar(0xFF);
-    uart.writechar(0xFD);
-    uart.writechar(0x00);
-
-    data_angle = [289, 23, 315]
-
-    _H = data_angle[0] >> 8
-    _L = data_angle[0] & 0x00FF
-    uart.writechar(_H)
-    uart.writechar(_L)
-
-    _H = data_angle[1] >> 8
-    _L = data_angle[1] & 0x00FF
-    uart.writechar(_H)
-    uart.writechar(_L)
-
-    _H = data_angle[2] >> 8
-    _L = data_angle[2] & 0x00FF
-    uart.writechar(_H)
-    uart.writechar(_L)
+    for i in header:
+        uart.writechar(header)
+        
+    for i in angles:
+        _H = angles[i] >> 8
+        _L = angles[i] & 0x00FF
+        uart.writechar(_H)
+        uart.writechar(_L)
+    
+    for i in distances:
+        uart.writechar(distances[i])
+    
+    _data = 0x00
+    for i in enables:
+        _data = _data & enables[i]
 
 
 while True:
     clock.tick()
     img = sensor.snapshot()
+    
+    for blob in img.find_blobs(threshold, pixel_threshold=100, area_threshold=100, merge=true,margin=10):
+        pixels.append(blob.pixels())
+        rectSpace.append(blob.rect())
+    
     sendData()
