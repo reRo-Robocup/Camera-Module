@@ -23,6 +23,10 @@ header = (0xFF, 0xFF, 0xFD, 0x00)
 
 def sendData(angles, distances, enables):
     
+    data_size = 10
+
+    send_data = [0x00] * data_size
+    
     # ヘッダー送信
     for i in header:
         uart.writechar(header)
