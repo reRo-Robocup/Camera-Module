@@ -22,19 +22,19 @@ header = (0xFF, 0xFF, 0xFD, 0x00)
 def sendData(angles, distances, enables):
     size = 10
     send_data = [0x00] * size
-    
+
     for i in header:
         send_data[i] = header
-        
+
     for i in angles:
         _H = angles[i] >> 8
         _L = angles[i] & 0x00FF
         send_data[4+i] = _H
         send_data[4+i] = _L
-        
+
     for i in range(size):
         uart.writechar(send_data[size])
-        
+
 orange = []
 blue = []
 yellow = []
@@ -42,8 +42,15 @@ yellow = []
 while True:
     clock.tick()
     img = sensor.snapshot()
+
+    pixels = rectSpace = [0]
     
     for blob in img.find_blobs(threshold, pixel_threshold=100, area_threshold=100, merge=true,margin=10):
+        pixels.append(blob.pixels())
+        rectSpace.append(blob.rect())
         
+    maxVal = max(pixels)
+    num = pixels.index(maxVal)
     
-    sendData()
+    dx = rectSpace[num][0] + int(rectSpace[num][2] / 2)
+    dy = rectSpace[num][1] + int(rectSpace[num][3] / 2)
