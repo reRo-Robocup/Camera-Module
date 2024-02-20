@@ -1,113 +1,63 @@
-import sensor, time, image, pyb, ulab, machine
-from ulab import numpy as np
+import sensor, image, time, ulab
+#from ulab import numpy
+
+import ulab as np
+
+
+#import numpy
 
 sensor.reset(freq=29700000, set_regs=True, dual_buff=True)
-
+#sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
+#sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
-# sensor.set_framesize(sensor.VGA)
+sensor.skip_frames(time = 2000)
 
-# -2 ~ +2
-sensor.set_contrast(0)
-sensor.set_brightness(0)
-sensor.set_saturation(0)
+#usb = pyb.USB_VCP()
 
-sensor.set_auto_gain(False)
-sensor.set_auto_whitebal(False)
-
-# IDEに送信するクオリティ, 0~100
-sensor.set_jb_quality(0)
-
-sensor.skip_frames(30)
-
-usb = pyb.USB_VCP()
 clock = time.clock()
 
-uart = pyb.UART(3, 19200)
-uart.init(115200, bits=8, parity=None, stop=1)
+threshold = [(0, 100, 12, 89, 22, 127)]
 
-LED = pyb.LED(2)
-
-header = (0xFF, 0xFF, 0xFD, 0x00)
-
-# P4-TX P5-RX
-
-def sendData(angles, distances, enables):
-    size = 10
-    send_data = [0x00] * size
-
-    for i in header:
-        send_data[i] = header
-
-    for i in angles:
-        _H = angles[i] >> 8
-        _L = angles[i] & 0x00FF
-        send_data[4+i] = _H
-        send_data[4+i] = _L
-
-    for i in range(size):
-        uart.writechar(send_data[size])
+img_w = sensor.width()
+img_h = sensor.height()
 
 def getCam(threshold):
-    pixels = [0]
-    rectSpace = [0]
-    cnt = 0
-    dx = dy = a = angle = cnt = dictance = 0
+    pixels_array = [0]
+    cx_array = [0]
+    cy_array = [0]
+    id = 0
 
     for blob in img.find_blobs(threshold, pixels_threshold = 20, area_threshold = 20, merge = True, margin = 10):
-        pixels.append(blob.pixels())
-        rectSpace.append(blob.rect())
-        cnt += 1
+        pixels_array.append(blob.pixels())
+        cx_array.append(blob.cx())
+        cy_array.append(blob.cy())
 
-    maxVal = max(pixels)
-    num = pixels.index(maxVal)
+    max_pixels = max(pixels_array)
+    id = pixels_array.index(max_pixels)
 
-    if cnt > 0:
-        dx = rectSpace[num][0] + int(rectSpace[num][2] / 2)
-        dy = rectSpace[num][1] + int(rectSpace[num][3] / 2)
-        distance = int(np.sqrt(pow(160 - dx,2) + pow(120 - dy,2)))
-        angle = 90 - int(np.degrees(np.arctan2(120 - dy,dx - 160)))
-        a = (120 - dy) / (dx - 160)
-        if angle < 0:
-            angle += 360
+    cx = cx_array[id]
+    cy = cy_array[id]
 
-    return angle, distance, dx, dy
+    cx -= img_w / 2
+    cy -= img_h / 2
+
+    if cx == 0:
+        cx = 1
+    if cy == 0:
+        cy = 1
+
+    #obj_degree = np.arctan2(cy, cx)
+    obj_angle = np.atan(cy / cx)
+    obj_angle *= (180 / 3.14)
+    print(obj_angle)
 
 
-cnt = 0
-
-while True:
+while(True):
     try:
-        LED.toggle()
-
         clock.tick()
         img = sensor.snapshot()
+        getCam(threshold)
 
-
-        data = getCam([(0, 100, 12, 89, 22, 127)])
-
-        print(data[0], data[1])
-
-        if usb.isconnected():
-            img.draw_cross(160,120,(0,0,0))
-            img.draw_circle(160,120,120,(255,255,255))
-            img.draw_line(160,120,data[2],data[3],(0,0,0))
-
-
-        for i in header:
-            uart.writechar(i)
-
-        hdata = data[0] >> 8
-        ldata = data[0] & 0x00FF
-        uart.writechar(hdata)
-        uart.writechar(ldata)
-
-        hdata = data[1] >> 8
-        ldata = data[1] & 0x00FF
-        uart.writechar(hdata)
-        uart.writechar(ldata)
-
-    except (ZeroDivisionError, RuntimeError, OSError, NameError) as err:
-        if usb.isconnected():
-            print(err)
+    except (AttributeError, OSError, RuntimeError) as err:
         pass
