@@ -1,18 +1,28 @@
-import sensor, time, image, pyb, ulab
+import sensor, time, image, pyb, ulab, machine
 from ulab import numpy as np
 
-# sensor.reset()
 sensor.reset(freq=29700000, set_regs=True, dual_buff=True)
+
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
-#sensor.set_contrast(100)
-#sensor.set_brightness(1)
-sensor.skip_frames(30)
+# sensor.set_framesize(sensor.VGA)
+
+# -2 ~ +2
+sensor.set_contrast(0)
+sensor.set_brightness(0)
+sensor.set_saturation(0)
+
 sensor.set_auto_gain(False)
 sensor.set_auto_whitebal(False)
 
+# IDEに送信するクオリティ, 0~100
+sensor.set_jb_quality(0)
+
+sensor.skip_frames(30)
+
 usb = pyb.USB_VCP()
 clock = time.clock()
+
 uart = pyb.UART(3, 19200)
 uart.init(115200, bits=8, parity=None, stop=1)
 
