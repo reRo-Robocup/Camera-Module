@@ -1,26 +1,28 @@
-import sensor, image, time, ulab
-#from ulab import numpy
-
+import sensor, image, time
 import ulab as np
+from machine import UART
+from fpioa_manager import fm
 
-
-#import numpy
+#from modules import ws2812
 
 sensor.reset(freq=29700000, set_regs=True, dual_buff=True)
-#sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
-#sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.skip_frames(time = 2000)
-
-#usb = pyb.USB_VCP()
-
-clock = time.clock()
 
 threshold = [(0, 100, 12, 89, 22, 127)]
 
 img_w = sensor.width()
 img_h = sensor.height()
+
+header = [0xFF, 0xFF, 0xFD, 0x00]
+
+fm.register(35, fm.fpioa.UART1_TX, force=True)
+fm.register(34, fm.fpioa.UART1_RX, force=True)
+
+uart = UART(UART.UART1, 115200, 8, 0, 0, timeout=1000, read_buf_len=4096)
+
+clock = time.clock()
 
 def getCam(threshold):
     pixels_array = [0]
@@ -47,17 +49,27 @@ def getCam(threshold):
     if cy == 0:
         cy = 1
 
-    #obj_degree = np.arctan2(cy, cx)
     obj_angle = np.atan(cy / cx)
     obj_angle *= (180 / 3.14)
     print(obj_angle)
+
+    return obj_angle
 
 
 while(True):
     try:
         clock.tick()
         img = sensor.snapshot()
-        getCam(threshold)
+        ang = getCam(threshold)
+
+        for i in header:
+            uart.writechar(i)
+
+        data_H = ang >> 8
+        data_L = data_H & 0x00FF
+
+        uart.write(data_H)
+        uart.write(data_L)
 
     except (AttributeError, OSError, RuntimeError) as err:
         pass
