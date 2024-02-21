@@ -38,21 +38,16 @@ def getCam(threshold):
     max_pixels = max(pixels_array)
     id = pixels_array.index(max_pixels)
 
-    cx = cx_array[id]
-    cy = cy_array[id]
-
-    cx -= img_w / 2
-    cy -= img_h / 2
+    cx = cx_array[id] - (img_w / 2)
+    cy = cy_array[id] - (img_h / 2)
 
     if cx == 0:
         cx = 1
     if cy == 0:
         cy = 1
 
-    obj_angle = np.atan(cy / cx)
-    obj_angle *= (180 / 3.14)
+    obj_angle = np.atan(cy / cx) * (180 / 3.14)
     print(obj_angle)
-
     return obj_angle
 
 
