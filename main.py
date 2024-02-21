@@ -53,25 +53,43 @@ def getCam(threshold):
     # print(obj_angle, obj_distance, enable)
     return obj_angle, obj_distance, enable
 
-def sendData(ang_array, distace_array, enable_array):
+def sendData(_ang_array, _distace_array, _enable_array):
     for i in header:
         uart.writechar(header)
+        
+    for i in range(3):
+        _Hdata = _ang_array[i] << 8
+        _Ldata = _Hdata & 0x00FF
+        uart.writechar(_Hdata)
+        uart.writechar(_Ldata)
+
+    for i in range(3):
+        _Hdata = _distace_array[i] << 8
+        _Ldata = _Hdata & 0x00FF
+        uart.writechar(_Hdata)
+        uart.writechar(_Ldata)
+
+    for i in range(3):
+        _Hdata = _enable_array[i] << 8
+        _Ldata = _Hdata & 0x00FF
+        uart.writechar(_Hdata)
+        uart.writechar(_Ldata)
 
 
 while(True):
     try:
         clock.tick()
         img = sensor.snapshot()
-        ang = getCam(orange)
 
-        for i in header:
-            uart.writechar(i)
+        ball_data = getCam(orange)
+        yell_data = getCam(yellow)
+        blue_data = getCam(blue)
 
-        data_H = ang >> 8
-        data_L = data_H & 0x00FF
-
-        uart.write(data_H)
-        uart.write(data_L)
+        ang_array = [ball_data[0], yell_data[0], blue_data[0]]
+        dis_array = [ball_data[1], yell_data[1], blue_data[1]]
+        enb_array = [ball_data[2], yell_data[2], blue_data[2]]
+        
+        sendData(ang_array, dis_array, enb_array)
 
     except (AttributeError, OSError, RuntimeError) as err:
         pass
