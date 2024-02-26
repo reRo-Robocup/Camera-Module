@@ -1,5 +1,6 @@
+import math
 import sensor, image, time
-import ulab as np
+#import ulab as np
 from machine import UART
 from fpioa_manager import fm
 
@@ -47,16 +48,16 @@ def getCam(threshold):
     if cy == 0:
         cy = 1
 
-    obj_angle = np.atan(cy / cx) * (180 / 3.14)
-    obj_distance = np.sqrt(np.pow(cx, 2) + np.pow(cy, 2))
-    
-    # print(obj_angle, obj_distance, enable)
-    return obj_angle, obj_distance, enable
+    obj_angle = math.atan2(cy, cx)
+    obj_distance = math.sqrt(math.pow(cx, 2) + math.pow(cy, 2))
+
+    #print(obj_angle, obj_distance, enable)
+    return int(obj_angle), int(obj_distance), enable, int(cx), int(cy)
 
 def sendData(_ang_array, _distace_array, _enable_array):
     for i in header:
         uart.writechar(header)
-        
+
     for i in range(3):
         _Hdata = _ang_array[i] << 8
         _Ldata = _Hdata & 0x00FF
@@ -75,6 +76,9 @@ def sendData(_ang_array, _distace_array, _enable_array):
         uart.writechar(_Hdata)
         uart.writechar(_Ldata)
 
+orange = [(0, 100, 10, 66, 14, 50)]
+blue = [(0, 100, -128, 127, -80, -34)]
+yellow = [(0, 100, -128, 127, -80, -34)]
 
 while(True):
     try:
@@ -88,8 +92,14 @@ while(True):
         ang_array = [ball_data[0], yell_data[0], blue_data[0]]
         dis_array = [ball_data[1], yell_data[1], blue_data[1]]
         enb_array = [ball_data[2], yell_data[2], blue_data[2]]
-        
-        sendData(ang_array, dis_array, enb_array)
+
+        #sendData(ang_array, dis_array, enb_array)
+
+        img.draw_line(int(img_w/2), int(img_h/2), int(ball_data[3] + (img_w / 2)), int(ball_data[4] + (img_h / 2)), (0,0,0), 3)
+
+        #img.draw_line(0, 0, 100, 100, (0,255,0), 10)
+
+        #print(ball_data[0])
 
     except (AttributeError, OSError, RuntimeError) as err:
         pass
