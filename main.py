@@ -21,12 +21,6 @@ clock = time.clock()
 
 header = b"\xff\xff\xfd\x00"
 
-
-orange = [(0, 100, 12, 89, 22, 127)]
-yellow = [(0)]
-blue = [(0)]
-
-
 def getCam(threshold):
     pixels_array = [0]
     cx_array = [0]
@@ -53,30 +47,13 @@ def getCam(threshold):
     if cy == 0:
         cy = 1
 
-    obj_angle = (math.atan2(cy, cx) * 180/math.pi) + 180
-
+    obj_angle = (math.atan2(cy, cx) * (180 / math.pi)) + 180
     obj_distance = math.sqrt(math.pow(cx, 2) + math.pow(cy, 2))
 
-    #print(obj_angle, obj_distance, enable)
     return int(obj_angle), int(obj_distance), enable, int(cx), int(cy)
 
 
 def sendData(_ang_array, _distace_array, _enable_array):
-    # sendBuff = header
-
-    # for i in range(3):
-    #     sendBuff += _ang_array[i].to_bytes(2, "little")
-
-    # for i in range(3):
-    #     sendBuff += _distace_array[i].to_bytes(2, "little")
-
-    # enable = 0
-    # for i in range(3):
-    #     enable = enable | _enable_array[i] << i
-    # sendBuff += enable.to_bytes(1, "little")
-
-    # uart.write(sendBuff)
-
     uart.write(header)
 
     for i in range(3):
@@ -88,10 +65,10 @@ def sendData(_ang_array, _distace_array, _enable_array):
     enable = 0
     for i in range(3):
         enable = enable | _enable_array[i] << i
+
     uart.write(enable.to_bytes(1, "little"))
 
-
-orange = [(0, 100, 10, 66, 14, 50)]
+orange = [(0, 100, 8, 60, 24, 58)]
 blue = [(0, 100, -128, 127, -80, -34)]
 yellow = [(0, 100, -128, 127, -80, -34)]
 
@@ -110,18 +87,14 @@ while True:
 
         sendData(ang_array, dis_array, enb_array)
 
-        #print(ang_array)
-
-        # img.draw_line(
-        #     int(img_w / 2),
-        #     int(img_h / 2),
-        #     int(ball_data[3] + (img_w / 2)),
-        #     int(ball_data[4] + (img_h / 2)),
-        #     (0, 0, 0),
-        #     3,
-        # )
-
-        # img.draw_line(0, 0, 100, 100, (0,255,0), 10)
+        img.draw_line(
+            int(img_w / 2),
+            int(img_h / 2),
+            int(ball_data[3] + (img_w / 2)),
+            int(ball_data[4] + (img_h / 2)),
+            (0, 0, 0),
+            3,
+        )
 
         # print(ball_data[0])
         # print(clock.fps())
