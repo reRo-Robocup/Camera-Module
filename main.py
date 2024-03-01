@@ -1,7 +1,5 @@
 import math
 import sensor, image, time
-
-# import ulab as np
 from machine import UART
 from fpioa_manager import fm
 
@@ -41,17 +39,21 @@ def getCam(threshold):
 
     cx = cx_array[index_id] - (img_w / 2)
     cy = cy_array[index_id] - (img_h / 2)
-
-    if cx == 0:
-        cx = 1
-    if cy == 0:
-        cy = 1
-
-    obj_angle = (math.atan2(cy, cx) * (180 / math.pi)) + 180
-    obj_distance = math.sqrt(math.pow(cx, 2) + math.pow(cy, 2))
+    
+    if cx == 0 and cy == 0:
+        obj_angle = 361
+        obj_distance = 0
+    elif cx == 0:
+        obj_angle = 90 if (cy > 0) else 270
+        obj_distance = cy
+    elif cy == 0:
+        obj_angle = 0 if (cx > 0) else 180
+        obj_distance = cx
+    else:
+        obj_angle = 360 - ((math.atan2(cy, cx) * (180 / math.pi)) + 180)
+        obj_distance = math.sqrt(math.pow(cx, 2) + math.pow(cy, 2))
 
     return int(obj_angle), int(obj_distance), enable, int(cx), int(cy)
-
 
 def sendData(_ang_array, _distace_array, _enable_array):
     uart.write(header)
@@ -87,14 +89,14 @@ while True:
 
         sendData(ang_array, dis_array, enb_array)
 
-        img.draw_line(
-            int(img_w / 2),
-            int(img_h / 2),
-            int(ball_data[3] + (img_w / 2)),
-            int(ball_data[4] + (img_h / 2)),
-            (0, 0, 0),
-            3,
-        )
+        #img.draw_line(
+            #int(img_w / 2),
+            #int(img_h / 2),
+            #int(ball_data[3] + (img_w / 2)),
+            #int(ball_data[4] + (img_h / 2)),
+            #(0, 0, 0),
+            #3,
+        #)
 
         # print(ball_data[0])
         # print(clock.fps())
