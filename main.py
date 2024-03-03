@@ -4,6 +4,7 @@ from machine import UART
 from fpioa_manager import fm
 
 sensor.reset(freq=29700000, set_regs=True, dual_buff=True)
+#sensor.reset(freq=20000000, set_regs=True, dual_buff=True)
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.skip_frames(time=2000)
@@ -20,6 +21,9 @@ uart = UART(UART.UART1, 115200, 8, 0, 0, timeout=1000, read_buf_len=4096)
 clock = time.clock()
 
 header = b"\xff\xff\xfd\x00"
+
+sensor.set_brightness(0)
+sensor.set_saturation(2)
 
 def getCam(threshold):
     pixels_array = [0]
@@ -91,19 +95,20 @@ while True:
 
         sendData(ang_array, dis_array, enb_array)
 
-        img.draw_line(
-            int(mirror_cx),
-            int(mirror_cy),
-            int(ball_data[3] + mirror_cx),
-            int(ball_data[4] + mirror_cy),
-            (0, 0, 0),
-            3,
-        )
+        #img.draw_line(
+            #int(mirror_cx),
+            #int(mirror_cy),
+            #int(ball_data[3] + mirror_cx),
+            #int(ball_data[4] + mirror_cy),
+            #(0, 0, 0),
+            #3,
+        #)
 
-        img.draw_cross(mirror_cx,mirror_cy,(255,255,255),5,2)
+        #img.draw_cross(mirror_cx,mirror_cy,(255,255,255),5,2)
 
         #print(ball_data[0])
         # print(clock.fps())
+        #print(clock.fps())
 
     except (AttributeError, OSError, RuntimeError) as err:
         #print(err)
