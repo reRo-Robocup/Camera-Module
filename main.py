@@ -2,12 +2,35 @@ import math
 import sensor, image, time
 from machine import UART
 from fpioa_manager import fm
+import Maix, gc
 
-sensor.reset(freq=29700000, set_regs=True, dual_buff=True)
-#sensor.reset(freq=20000000, set_regs=True, dual_buff=True)
+cpu_freq = 600
+pll1 = 1200
+kpu_div = 16
+
+print("Current CPU Frequency: ", Maix.freq.get_cpu())
+if (abs(cpu_freq - Maix.freq.get_cpu())) > 10:
+    print("CPU Frequency is not " + str(cpu_freq) + "MHz!")
+    print("Set it to " + str(cpu_freq) + "MHz...")
+    Maix.freq.set(cpu=cpu_freq, pll1=100, kpu_div=1)
+
+print("Current KPU Frequency: ", Maix.freq.get_kpu())
+if (abs((pll1 / kpu_div) - Maix.freq.get_kpu())) > 5:
+    print("KPU Frequency is not " + str((pll1 / kpu_div)) + "MHz!")
+    print("Set it to " + str((pll1 / kpu_div)) + "MHz...")
+    Maix.freq.set(cpu=cpu_freq, pll1=pll1, kpu_div=kpu_div)
+
+Maix.utils.gc_heap_size(0x800000)
+print(Maix.utils.gc_heap_size())
+print(gc.mem_free())
+
+# sensor.reset(freq=29700000, set_regs=True, dual_buff=True)
+sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.skip_frames(time=2000)
+
+# sensor.set_jb_quality(100)
 
 img_w = sensor.width()
 img_h = sensor.height()
@@ -16,14 +39,15 @@ mirror_cy = 126
 
 fm.register(35, fm.fpioa.UART1_RX, force=True)
 fm.register(34, fm.fpioa.UART1_TX, force=True)
-uart = UART(UART.UART1, 115200, 8, 0, 0, timeout=1000, read_buf_len=4096)
+uart = UART(UART.UART1, 115200, 8, 0, 0, timeout=1000)
 
 clock = time.clock()
 
 header = b"\xff\xff\xfd\x00"
 
-sensor.set_brightness(0)
-sensor.set_saturation(2)
+# sensor.set_brightness(0)
+# sensor.set_saturation(2)
+
 
 def getCam(threshold):
     pixels_array = [0]
@@ -61,6 +85,7 @@ def getCam(threshold):
 
     return int(obj_angle), int(obj_distance), enable, int(cx), int(cy)
 
+
 def sendData(_ang_array, _distace_array, _enable_array):
     uart.write(header)
 
@@ -75,6 +100,7 @@ def sendData(_ang_array, _distace_array, _enable_array):
         enable = enable | _enable_array[i] << i
 
     uart.write(enable.to_bytes(1, "little"))
+
 
 orange = [(0, 100, 11, 127, 26, 126)]
 blue = [(0, 100, -128, 127, -80, -34)]
@@ -95,21 +121,20 @@ while True:
 
         sendData(ang_array, dis_array, enb_array)
 
-        #img.draw_line(
-            #int(mirror_cx),
-            #int(mirror_cy),
-            #int(ball_data[3] + mirror_cx),
-            #int(ball_data[4] + mirror_cy),
-            #(0, 0, 0),
-            #3,
-        #)
+        # img.draw_line(
+        #     int(mirror_cx),
+        #     int(mirror_cy),
+        #     int(ball_data[3] + mirror_cx),
+        #     int(ball_data[4] + mirror_cy),
+        #     (0, 0, 0),
+        #     3,
+        # )
 
-        #img.draw_cross(mirror_cx,mirror_cy,(255,255,255),5,2)
+        # img.draw_cross(mirror_cx,mirror_cy,(255,255,255),5,2)
 
-        #print(ball_data[0])
+        # print(ball_data[0])
         # print(clock.fps())
-        #print(clock.fps())
 
     except (AttributeError, OSError, RuntimeError) as err:
-        #print(err)
+        # print(err)
         pass
