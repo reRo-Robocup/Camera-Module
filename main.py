@@ -10,6 +10,8 @@ sensor.skip_frames(time=2000)
 
 img_w = sensor.width()
 img_h = sensor.height()
+mirror_cx = 179
+mirror_cy = 126
 
 fm.register(35, fm.fpioa.UART1_RX, force=True)
 fm.register(34, fm.fpioa.UART1_TX, force=True)
@@ -27,7 +29,7 @@ def getCam(threshold):
     enable = False
 
     for blob in img.find_blobs(
-        threshold, pixels_threshold=20, area_threshold=20, merge=True, margin=10
+        threshold, pixels_threshold=10, area_threshold=20, merge=True, margin=10
     ):
         pixels_array.append(blob.pixels())
         cx_array.append(blob.cx())
@@ -37,9 +39,9 @@ def getCam(threshold):
     max_pixels = max(pixels_array)
     index_id = pixels_array.index(max_pixels)
 
-    cx = cx_array[index_id] - (img_w / 2)
-    cy = cy_array[index_id] - (img_h / 2)
-    
+    cx = cx_array[index_id] - (mirror_cx)
+    cy = cy_array[index_id] - (mirror_cy)
+
     if cx == 0 and cy == 0:
         obj_angle = 361
         obj_distance = 0
@@ -70,7 +72,7 @@ def sendData(_ang_array, _distace_array, _enable_array):
 
     uart.write(enable.to_bytes(1, "little"))
 
-orange = [(0, 100, 8, 60, 24, 58)]
+orange = [(0, 100, 11, 127, 26, 126)]
 blue = [(0, 100, -128, 127, -80, -34)]
 yellow = [(0, 100, -128, 127, -80, -34)]
 
@@ -89,16 +91,18 @@ while True:
 
         sendData(ang_array, dis_array, enb_array)
 
-        #img.draw_line(
-            #int(img_w / 2),
-            #int(img_h / 2),
-            #int(ball_data[3] + (img_w / 2)),
-            #int(ball_data[4] + (img_h / 2)),
-            #(0, 0, 0),
-            #3,
-        #)
+        img.draw_line(
+            int(mirror_cx),
+            int(mirror_cy),
+            int(ball_data[3] + mirror_cx),
+            int(ball_data[4] + mirror_cy),
+            (0, 0, 0),
+            3,
+        )
 
-        # print(ball_data[0])
+        img.draw_cross(mirror_cx,mirror_cy,(255,255,255),5,2)
+
+        #print(ball_data[0])
         # print(clock.fps())
 
     except (AttributeError, OSError, RuntimeError) as err:
