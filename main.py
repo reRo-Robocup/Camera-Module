@@ -4,7 +4,8 @@ from machine import UART
 from fpioa_manager import fm
 import Maix, gc
 
-cpu_freq = 600
+
+cpu_freq = 550
 pll1 = 1200
 kpu_div = 16
 
