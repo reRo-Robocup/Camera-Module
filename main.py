@@ -1,8 +1,16 @@
-import math
-import sensor, image, time
+#
+#   main.py
+#
+#   Created on: 2024/1/5
+#
+#   Author: onlydcx, G4T1PR0
+#
+
+import math, sensor, image, time
+import Maix, gc
+
 from machine import UART
 from fpioa_manager import fm
-import Maix, gc
 
 cpu_freq = 550
 pll1 = 1200
