@@ -41,6 +41,11 @@ sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.skip_frames(time=2000)
+#sensor.set_vflip(True)
+
+#sensor.set_brightness(1)
+sensor.set_saturation(2)
+#sensor.set_contrast(-2)
 
 img_w = sensor.width()
 img_h = sensor.height()
@@ -54,9 +59,6 @@ uart = UART(UART.UART1, 115200, 8, 0, 0, timeout=1000)
 clock = time.clock()
 
 header = b"\xff\xff\xfd\x00"
-
-# sensor.set_brightness(0)
-sensor.set_saturation(2)
 
 def getCam(threshold):
     pixels_array = [0]
@@ -72,12 +74,18 @@ def getCam(threshold):
         cx_array.append(blob.cx())
         cy_array.append(blob.cy())
         enable = True
+        
+    del blob
+    gc.collect()
 
     max_pixels = max(pixels_array)
     index_id = pixels_array.index(max_pixels)
 
     cx = cx_array[index_id] - (mirror_cx)
     cy = cy_array[index_id] - (mirror_cy)
+    
+    del cx_array, cy_array
+    gc.collect()
 
     if cx == 0 and cy == 0:
         obj_angle = 361
@@ -92,8 +100,11 @@ def getCam(threshold):
         obj_angle = 360 - ((math.atan2(cy, cx) * (180 / math.pi)) + 180)
         obj_distance = math.sqrt(math.pow(cx, 2) + math.pow(cy, 2))
 
-    return int(obj_angle), int(abs(obj_distance)), enable, int(cx), int(cy)
+    obj_angle = obj_angle - 180
+    if(obj_angle < 0):
+        obj_angle = obj_angle + 360
 
+    return int(obj_angle), int(abs(obj_distance)), enable, int(cx), int(cy)
 
 def sendData(_ang_array, _distace_array, _enable_array):
     uart.write(header)
@@ -110,8 +121,7 @@ def sendData(_ang_array, _distace_array, _enable_array):
 
     uart.write(enable.to_bytes(1, "little"))
 
-
-orange = [(0, 100, 35, 127, -11, 87)]
+orange = [(48, 70, 46, 99, -97, 127)]
 blue = [(0, 100, -118, 127, -111, -38)]
 yellow = [(0, 100, -128, 16, 39, 127)]
 
@@ -129,16 +139,26 @@ while True:
         enb_array = [ball_data[2], yell_data[2], blue_data[2]]
 
         sendData(ang_array, dis_array, enb_array)
+        
+        del ball_data, yell_data, blue_data, ang_array, dis_array, enb_array
+        gc.collect()
 
-        img.draw_line(int(mirror_cx),int(mirror_cy),int(ball_data[3] + mirror_cx),int(ball_data[4] + mirror_cy),(0, 0, 0),2,)
-        img.draw_line(int(mirror_cx),int(mirror_cy),int(blue_data[3] + mirror_cx),int(blue_data[4] + mirror_cy),(0, 0, 255),2,)
-        img.draw_line(int(mirror_cx),int(mirror_cy),int(yell_data[3] + mirror_cx),int(yell_data[4] + mirror_cy),(255, 255, 0),2,)
-        img.draw_cross(mirror_cx,mirror_cy,(255,255,255),5,2)
+        #img.draw_line(int(mirror_cx),int(mirror_cy),int(ball_data[3] + mirror_cx),int(ball_data[4] + mirror_cy),(0, 0, 0),2,)
+        #img.draw_line(int(mirror_cx),int(mirror_cy),int(blue_data[3] + mirror_cx),int(blue_data[4] + mirror_cy),(255, 255, 255),2,)
+        #img.draw_line(int(mirror_cx),int(mirror_cy),int(yell_data[3] + mirror_cx),int(yell_data[4] + mirror_cy),(255, 255, 0),2,)
+        #img.draw_cross(mirror_cx,mirror_cy,(255,255,255),5,2)
 
-        blue_dis_new = int(math.cos(blue_data[0] * (math.pi / 180)) * 100)
-        #print(clock.fps())
-        print(blue_data[0], blue_data[1])
+        #print(blue_data[0])
 
-    except (AttributeError, OSError, RuntimeError) as err:
+        #ang = blue_data[0] + 90
+        #if(ang > 360):
+            #ang = ang - 360
+
+        #blue_ang_rad = blue_data[0] * (math.pi / 180)
+        #goal_xvect = abs(math.cos(blue_ang_rad) * 100)
+        #print(goal_xvect)
+        print(clock.fps())
+
+    except (OSError, RuntimeError, AttributeError) as err:
         # print(err)
         pass
