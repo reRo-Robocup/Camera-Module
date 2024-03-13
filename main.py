@@ -165,7 +165,8 @@ while True:
 
         ang_array = [ball_data[0], yell_data[0], blue_data[0]]
         dis_array = [ball_data[1], yell_data[1], blue_data[1]]
-        tf_array = [ball_data[2], yell_data[2], blue_data[2]]
+        tf_array = [ball_data[2], yell_data[2], blue_data[2],
+                    ball_data[5], yell_data[5], blue_data[5]]
 
         sendData(ang_array, dis_array, tf_array)
 
