@@ -114,10 +114,10 @@ def getCam(threshold, obj_id):
     R_dir = edge_y_R > 0
     L_dir = edge_y_L < 0
     
-    result = R_dir and L_dir
+    isFront = R_dir and L_dir
     
     if debug_flag[obj_id]:
-        if result:
+        if isFront:
             img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(0, 255, 0),3,)
             
         else:
@@ -131,7 +131,7 @@ def getCam(threshold, obj_id):
         img.draw_cross(mirror_cx + edge_x_R,    mirror_cy + edge_y_R,   (0,0,0),5,2)
         img.draw_rectangle(edge_x_L + mirror_cx, edge_y_L + mirror_cy, w, h, (127,127,127) ,1,)
 
-    return int(obj_angle), int(abs(obj_distance)), enable, int(cx), int(cy)
+    return int(obj_angle), int(abs(obj_distance)), enable, int(cx), int(cy), isFront
 
 def sendData(_ang_array, _distace_array, _enable_array):
     uart.write(header)
@@ -143,7 +143,7 @@ def sendData(_ang_array, _distace_array, _enable_array):
         uart.write(_distace_array[i].to_bytes(2, "little"))
 
     enable = 0
-    for i in range(3):
+    for i in range(6):
         enable = enable | _enable_array[i] << i
 
     uart.write(enable.to_bytes(1, "little"))
@@ -165,9 +165,9 @@ while True:
 
         ang_array = [ball_data[0], yell_data[0], blue_data[0]]
         dis_array = [ball_data[1], yell_data[1], blue_data[1]]
-        enb_array = [ball_data[2], yell_data[2], blue_data[2]]
+        tf_array = [ball_data[2], yell_data[2], blue_data[2]]
 
-        sendData(ang_array, dis_array, enb_array)
+        sendData(ang_array, dis_array, tf_array)
 
     except (OSError, RuntimeError, AttributeError) as err:
         # print(err)
