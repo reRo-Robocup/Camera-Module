@@ -38,9 +38,9 @@ sensor.set_framesize(sensor.QVGA)
 sensor.skip_frames(time=2000)
 #sensor.set_vflip(True)
 
-#sensor.set_brightness(1)
 sensor.set_saturation(2)
 #sensor.set_contrast(-2)
+#sensor.set_brightness(1)
 
 img_w = sensor.width()
 img_h = sensor.height()
@@ -55,7 +55,8 @@ clock = time.clock()
 
 header = b"\xff\xff\xfd\x00"
 
-def getCam(threshold):
+
+def getCam(threshold, obj_id):
     pixels_array = [0]
     cx_array = [0]
     cy_array = [0]
@@ -114,20 +115,21 @@ def getCam(threshold):
     L_dir = edge_y_L < 0
     
     result = R_dir and L_dir
+    
+    if debug_flag[obj_id]:
+        if result:
+            img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(0, 255, 0),3,)
+            
+        else:
+            img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(255, 0, 0),3,)
+            
+        img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + edge_x_L),int(mirror_cy + edge_y_L),(255, 255, 255),2,)
+        img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + edge_x_R),int(mirror_cy + edge_y_R),(255, 255, 255),2,)
 
-    if result:
-        img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(0, 255, 0),3,)
-        
-    else:
-        img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(255, 0, 0),3,)
-        
-    img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + edge_x_L),int(mirror_cy + edge_y_L),(255, 255, 255),2,)
-    img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + edge_x_R),int(mirror_cy + edge_y_R),(255, 255, 255),2,)
-
-    img.draw_cross(mirror_cx + cx,          mirror_cy + cy,         (0,0,0),5,2)
-    img.draw_cross(mirror_cx + edge_x_L,    mirror_cy + edge_y_L,   (0,0,0),5,2)
-    img.draw_cross(mirror_cx + edge_x_R,    mirror_cy + edge_y_R,   (0,0,0),5,2)
-    img.draw_rectangle(edge_x_L + mirror_cx, edge_y_L + mirror_cy, w, h, (127,127,127) ,1,)
+        img.draw_cross(mirror_cx + cx,          mirror_cy + cy,         (0,0,0),5,2)
+        img.draw_cross(mirror_cx + edge_x_L,    mirror_cy + edge_y_L,   (0,0,0),5,2)
+        img.draw_cross(mirror_cx + edge_x_R,    mirror_cy + edge_y_R,   (0,0,0),5,2)
+        img.draw_rectangle(edge_x_L + mirror_cx, edge_y_L + mirror_cy, w, h, (127,127,127) ,1,)
 
     return int(obj_angle), int(abs(obj_distance)), enable, int(cx), int(cy)
 
@@ -150,14 +152,16 @@ orange = [(51, 70, 18, 52, 36, 127)]
 blue = [(0, 100, -118, 127, -111, -38)]
 yellow = [(0, 100, -128, 16, 39, 127)]
 
+debug_flag = [0,0,0]
+
 while True:
     try:
         clock.tick()
         img = sensor.snapshot()
 
-        ball_data = getCam(orange)
-        yell_data = getCam(yellow)
-        blue_data = getCam(blue)
+        ball_data = getCam(orange, 0)
+        yell_data = getCam(yellow, 1)
+        blue_data = getCam(blue, 2)
 
         ang_array = [ball_data[0], yell_data[0], blue_data[0]]
         dis_array = [ball_data[1], yell_data[1], blue_data[1]]
