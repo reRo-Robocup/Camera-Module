@@ -59,6 +59,10 @@ def getCam(threshold):
     pixels_array = [0]
     cx_array = [0]
     cy_array = [0]
+    x_array = [0]
+    y_array = [0]
+    w_array = [0]
+    h_array = [0]
     index_id = 0
     enable = False
 
@@ -68,6 +72,10 @@ def getCam(threshold):
         pixels_array.append(blob.pixels())
         cx_array.append(blob.cx())
         cy_array.append(blob.cy())
+        x_array.append(blob.x())
+        y_array.append(blob.y())
+        w_array.append(blob.w())
+        h_array.append(blob.h())
         enable = True
 
     max_pixels = max(pixels_array)
@@ -75,6 +83,15 @@ def getCam(threshold):
 
     cx = cx_array[index_id] - (mirror_cx)
     cy = cy_array[index_id] - (mirror_cy)
+
+    edge_x_L = x_array[index_id] - (mirror_cx)
+    edge_x_R = edge_x_L + w_array[index_id]
+
+    edge_y_L = y_array[index_id] - (mirror_cy)
+    edge_y_R = edge_y_L + h_array[index_id]
+    
+    w = w_array[index_id]
+    h = h_array[index_id]
 
     if cx == 0 and cy == 0:
         obj_angle = 361
@@ -92,6 +109,25 @@ def getCam(threshold):
     obj_angle = obj_angle - 180
     if(obj_angle < 0):
         obj_angle = obj_angle + 360
+
+    R_dir = edge_y_R > 0
+    L_dir = edge_y_L < 0
+    
+    result = R_dir and L_dir
+
+    if result:
+        img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(0, 255, 0),3,)
+        
+    else:
+        img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(255, 0, 0),3,)
+        
+    img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + edge_x_L),int(mirror_cy + edge_y_L),(255, 255, 255),2,)
+    img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + edge_x_R),int(mirror_cy + edge_y_R),(255, 255, 255),2,)
+
+    img.draw_cross(mirror_cx + cx,          mirror_cy + cy,         (0,0,0),5,2)
+    img.draw_cross(mirror_cx + edge_x_L,    mirror_cy + edge_y_L,   (0,0,0),5,2)
+    img.draw_cross(mirror_cx + edge_x_R,    mirror_cy + edge_y_R,   (0,0,0),5,2)
+    img.draw_rectangle(edge_x_L + mirror_cx, edge_y_L + mirror_cy, w, h, (127,127,127) ,1,)
 
     return int(obj_angle), int(abs(obj_distance)), enable, int(cx), int(cy)
 
@@ -128,22 +164,6 @@ while True:
         enb_array = [ball_data[2], yell_data[2], blue_data[2]]
 
         sendData(ang_array, dis_array, enb_array)
-
-        #img.draw_line(int(mirror_cx),int(mirror_cy),int(ball_data[3] + mirror_cx),int(ball_data[4] + mirror_cy),(0, 0, 0),2,)
-        #img.draw_line(int(mirror_cx),int(mirror_cy),int(blue_data[3] + mirror_cx),int(blue_data[4] + mirror_cy),(255, 255, 255),2,)
-        #img.draw_line(int(mirror_cx),int(mirror_cy),int(yell_data[3] + mirror_cx),int(yell_data[4] + mirror_cy),(255, 255, 0),2,)
-        #img.draw_cross(mirror_cx,mirror_cy,(255,255,255),5,2)
-
-        #print(blue_data[1])
-
-        #ang = blue_data[0] + 90
-        #if(ang > 360):
-            #ang = ang - 360
-
-        #blue_ang_rad = blue_data[0] * (math.pi / 180)
-        #goal_xvect = abs(math.cos(blue_ang_rad) * 100)
-        #print(goal_xvect)
-        #print(clock.fps())
 
     except (OSError, RuntimeError, AttributeError) as err:
         # print(err)
