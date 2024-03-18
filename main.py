@@ -32,9 +32,11 @@ Maix.utils.gc_heap_size(0x800000)
 print(Maix.utils.gc_heap_size())
 print(gc.mem_free())
 
-sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
+#sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
+sensor.reset(freq=24000000, set_regs=True, dual_buff=False)
 sensor.set_pixformat(sensor.RGB565)
-sensor.set_framesize(sensor.QVGA)
+sensor.set_framesize(sensor.VGA)
+#sensor.set_framesize(sensor.QVGA)
 sensor.skip_frames(time=2000)
 #sensor.set_vflip(True)
 
@@ -44,8 +46,11 @@ sensor.set_saturation(2)
 
 img_w = sensor.width()
 img_h = sensor.height()
-mirror_cx = 179
-mirror_cy = 126
+#mirror_cx = 179
+#mirror_cy = 126
+
+mirror_cx = 350
+mirror_cy = 240
 
 fm.register(35, fm.fpioa.UART1_RX, force=True)
 fm.register(34, fm.fpioa.UART1_TX, force=True)
@@ -54,7 +59,6 @@ uart = UART(UART.UART1, 115200, 8, 0, 0, timeout=1000)
 clock = time.clock()
 
 header = b"\xff\xff\xfd\x00"
-
 
 def getCam(threshold, obj_id):
     pixels_array = [0]
@@ -79,6 +83,9 @@ def getCam(threshold, obj_id):
         h_array.append(blob.h())
         enable = True
 
+    #max_pixels = max(blob.pixels())
+    #index_id = blob.pixels().index(max_pixels)
+
     max_pixels = max(pixels_array)
     index_id = pixels_array.index(max_pixels)
 
@@ -90,7 +97,7 @@ def getCam(threshold, obj_id):
 
     edge_y_L = y_array[index_id] - (mirror_cy)
     edge_y_R = edge_y_L + h_array[index_id]
-    
+
     w = w_array[index_id]
     h = h_array[index_id]
 
@@ -113,16 +120,16 @@ def getCam(threshold, obj_id):
 
     R_dir = edge_y_R > 0
     L_dir = edge_y_L < 0
-    
+
     isFront = R_dir and L_dir
-    
+
     if debug_flag[obj_id]:
         if isFront:
             img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(0, 255, 0),3,)
-            
+
         else:
             img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(255, 0, 0),3,)
-            
+
         img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + edge_x_L),int(mirror_cy + edge_y_L),(255, 255, 255),2,)
         img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + edge_x_R),int(mirror_cy + edge_y_R),(255, 255, 255),2,)
 
@@ -148,10 +155,11 @@ def sendData(_ang_array, _distace_array, _enable_array):
 
     uart.write(enable.to_bytes(1, "little"))
 
-orange = [(51, 70, 18, 52, 36, 127)]
-blue = [(0, 100, -118, 127, -111, -38)]
-yellow = [(0, 100, -128, 16, 39, 127)]
+orange = [(36, 66, 9, 127, 40, 73)]
+blue = [(10, 30, 7, 37, -64, -37)]
+yellow = [(41, 68, -16, 12, 43, 127)]
 
+#debug_flag = [True,True,True]
 debug_flag = [0,0,0]
 
 while True:
@@ -170,6 +178,9 @@ while True:
 
         sendData(ang_array, dis_array, tf_array)
 
+        #print(clock.fps())
+        #print(ball_data[2])
+
     except (OSError, RuntimeError, AttributeError) as err:
-        # print(err)
+        #print(err)
         pass
