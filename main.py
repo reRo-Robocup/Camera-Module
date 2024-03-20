@@ -32,11 +32,21 @@ Maix.utils.gc_heap_size(0x800000)
 print(Maix.utils.gc_heap_size())
 print(gc.mem_free())
 
-#sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
-sensor.reset(freq=24000000, set_regs=True, dual_buff=False)
+isAttacker = True;
+
+if isAttacker:
+    sensor.reset(freq=24000000, set_regs=True, dual_buff=False)
+    sensor.set_framesize(sensor.VGA)
+    mirror_cx = 350
+    mirror_cy = 240
+
+else:
+    sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
+    sensor.set_framesize(sensor.QVGA)
+    mirror_cx = 179
+    mirror_cy = 126
+
 sensor.set_pixformat(sensor.RGB565)
-sensor.set_framesize(sensor.VGA)
-#sensor.set_framesize(sensor.QVGA)
 sensor.skip_frames(time=2000)
 #sensor.set_vflip(True)
 
@@ -46,11 +56,6 @@ sensor.set_saturation(2)
 
 img_w = sensor.width()
 img_h = sensor.height()
-#mirror_cx = 179
-#mirror_cy = 126
-
-mirror_cx = 350
-mirror_cy = 240
 
 fm.register(35, fm.fpioa.UART1_RX, force=True)
 fm.register(34, fm.fpioa.UART1_TX, force=True)
@@ -59,6 +64,8 @@ uart = UART(UART.UART1, 115200, 8, 0, 0, timeout=1000)
 clock = time.clock()
 
 header = b"\xff\xff\xfd\x00"
+
+debug_flag = [0,0,0]
 
 def getCam(threshold, obj_id):
     pixels_array = [0]
@@ -155,9 +162,9 @@ def sendData(_ang_array, _distace_array, _enable_array):
 
     uart.write(enable.to_bytes(1, "little"))
 
-orange = [(36, 66, 9, 127, 40, 73)]
-blue = [(10, 30, 7, 37, -64, -37)]
-yellow = [(41, 68, -16, 12, 43, 127)]
+orange = [(0, 69, 6, 67, 38, 85)]
+blue = [(17, 43, 12, 46, -74, -40)]
+yellow = [(44, 61, -24, -5, 35, 67)]
 
 #debug_flag = [True,True,True]
 debug_flag = [0,0,0]
