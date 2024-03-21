@@ -32,8 +32,8 @@ Maix.utils.gc_heap_size(0x800000)
 print(Maix.utils.gc_heap_size())
 print(gc.mem_free())
 
-isAttacker = False;
-machine_id = 1
+isAttacker = False
+machine_id = 0
 
 if isAttacker:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=False)
@@ -50,19 +50,19 @@ else:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
     sensor.set_framesize(sensor.QVGA)
     if machine_id == 0:
-        mirror_cx = 179
-        mirror_cy = 126
+        mirror_cx = 174
+        mirror_cy = 122
     else:
         mirror_cx = 156
         mirror_cy = 116
 
 sensor.set_pixformat(sensor.RGB565)
 sensor.skip_frames(time=2000)
-#sensor.set_vflip(True)
+# sensor.set_vflip(True)
 
 sensor.set_saturation(2)
-#sensor.set_contrast(-2)
-#sensor.set_brightness(1)
+# sensor.set_contrast(-2)
+# sensor.set_brightness(1)
 
 img_w = sensor.width()
 img_h = sensor.height()
@@ -75,9 +75,10 @@ clock = time.clock()
 
 header = b"\xff\xff\xfd\x00"
 
-debug_flag = [0,0,0]
+debug_flag = [0, 0, 0]
 
 isCatch = False
+
 
 def getCam(threshold, obj_id):
     pixels_array = [0]
@@ -102,8 +103,8 @@ def getCam(threshold, obj_id):
         h_array.append(blob.h())
         enable = True
 
-    #max_pixels = max(blob.pixels())
-    #index_id = blob.pixels().index(max_pixels)
+    # max_pixels = max(blob.pixels())
+    # index_id = blob.pixels().index(max_pixels)
 
     max_pixels = max(pixels_array)
     index_id = pixels_array.index(max_pixels)
@@ -134,7 +135,7 @@ def getCam(threshold, obj_id):
         obj_distance = math.sqrt(math.pow(cx, 2) + math.pow(cy, 2))
 
     obj_angle = obj_angle - 180
-    if(obj_angle < 0):
+    if obj_angle < 0:
         obj_angle = obj_angle + 360
 
     R_dir = edge_y_R > 0
@@ -147,20 +148,56 @@ def getCam(threshold, obj_id):
 
     if debug_flag[obj_id]:
         if isFront:
-            img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(0, 255, 0),3,)
+            img.draw_line(
+                int(mirror_cx),
+                int(mirror_cy),
+                int(mirror_cx + cx),
+                int(mirror_cy + cy),
+                (0, 255, 0),
+                3,
+            )
 
         else:
-            img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(255, 0, 0),3,)
+            img.draw_line(
+                int(mirror_cx),
+                int(mirror_cy),
+                int(mirror_cx + cx),
+                int(mirror_cy + cy),
+                (255, 0, 0),
+                3,
+            )
 
-        img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + edge_x_L),int(mirror_cy + edge_y_L),(255, 255, 255),2,)
-        img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + edge_x_R),int(mirror_cy + edge_y_R),(255, 255, 255),2,)
+        img.draw_line(
+            int(mirror_cx),
+            int(mirror_cy),
+            int(mirror_cx + edge_x_L),
+            int(mirror_cy + edge_y_L),
+            (255, 255, 255),
+            2,
+        )
+        img.draw_line(
+            int(mirror_cx),
+            int(mirror_cy),
+            int(mirror_cx + edge_x_R),
+            int(mirror_cy + edge_y_R),
+            (255, 255, 255),
+            2,
+        )
 
-        img.draw_cross(mirror_cx + cx,          mirror_cy + cy,         (0,0,0),5,2)
-        img.draw_cross(mirror_cx + edge_x_L,    mirror_cy + edge_y_L,   (0,0,0),5,2)
-        img.draw_cross(mirror_cx + edge_x_R,    mirror_cy + edge_y_R,   (0,0,0),5,2)
-        img.draw_rectangle(edge_x_L + mirror_cx, edge_y_L + mirror_cy, w, h, (127,127,127) ,1,)
+        img.draw_cross(mirror_cx + cx, mirror_cy + cy, (0, 0, 0), 5, 2)
+        img.draw_cross(mirror_cx + edge_x_L, mirror_cy + edge_y_L, (0, 0, 0), 5, 2)
+        img.draw_cross(mirror_cx + edge_x_R, mirror_cy + edge_y_R, (0, 0, 0), 5, 2)
+        img.draw_rectangle(
+            edge_x_L + mirror_cx,
+            edge_y_L + mirror_cy,
+            w,
+            h,
+            (127, 127, 127),
+            1,
+        )
 
     return int(obj_angle), int(abs(obj_distance)), enable, int(cx), int(cy), isFront
+
 
 def sendData(_ang_array, _distace_array, _enable_array):
     uart.write(header)
@@ -177,11 +214,12 @@ def sendData(_ang_array, _distace_array, _enable_array):
 
     uart.write(enable.to_bytes(1, "little"))
 
+
 orange = [(0, 69, 6, 67, 38, 85)]
 blue = [(18, 42, 16, 71, -93, -18)]
 yellow = [(41, 73, -17, 7, 47, 127)]
 
-#debug_flag = [True,True,True]
+#debug_flag = [True, True, True]
 debug_flag = [0,0,0]
 
 while True:
@@ -195,14 +233,20 @@ while True:
 
         ang_array = [ball_data[0], yell_data[0], blue_data[0]]
         dis_array = [ball_data[1], yell_data[1], blue_data[1]]
-        tf_array = [ball_data[2], yell_data[2], blue_data[2],
-                    ball_data[5], yell_data[5], blue_data[5]]
+        tf_array = [
+            ball_data[2],
+            yell_data[2],
+            blue_data[2],
+            ball_data[5],
+            yell_data[5],
+            blue_data[5],
+        ]
 
         sendData(ang_array, dis_array, tf_array)
 
-        #print(clock.fps())
-        #print(ball_data[0])
+        # print(clock.fps())
+        # print(ang_array)
 
     except (OSError, RuntimeError, AttributeError) as err:
-        #print(err)
+        # print(err)
         pass
