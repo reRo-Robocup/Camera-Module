@@ -32,19 +32,29 @@ Maix.utils.gc_heap_size(0x800000)
 print(Maix.utils.gc_heap_size())
 print(gc.mem_free())
 
-isAttacker = True;
+isAttacker = False;
+machine_id = 1
 
 if isAttacker:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=False)
     sensor.set_framesize(sensor.VGA)
-    mirror_cx = 350
-    mirror_cy = 240
+    if machine_id == 0:
+        mirror_cx = 350
+        mirror_cy = 240
+    else:
+        # 未調整
+        mirror_cx = 310
+        mirror_cy = 220
 
 else:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
     sensor.set_framesize(sensor.QVGA)
-    mirror_cx = 179
-    mirror_cy = 126
+    if machine_id == 0:
+        mirror_cx = 179
+        mirror_cy = 126
+    else:
+        mirror_cx = 156
+        mirror_cy = 116
 
 sensor.set_pixformat(sensor.RGB565)
 sensor.skip_frames(time=2000)
@@ -66,6 +76,8 @@ clock = time.clock()
 header = b"\xff\xff\xfd\x00"
 
 debug_flag = [0,0,0]
+
+isCatch = False
 
 def getCam(threshold, obj_id):
     pixels_array = [0]
@@ -130,6 +142,9 @@ def getCam(threshold, obj_id):
 
     isFront = R_dir and L_dir
 
+    if obj_id == 1:
+        pass
+
     if debug_flag[obj_id]:
         if isFront:
             img.draw_line(int(mirror_cx),int(mirror_cy),int(mirror_cx + cx),int(mirror_cy + cy),(0, 255, 0),3,)
@@ -163,8 +178,8 @@ def sendData(_ang_array, _distace_array, _enable_array):
     uart.write(enable.to_bytes(1, "little"))
 
 orange = [(0, 69, 6, 67, 38, 85)]
-blue = [(17, 43, 12, 46, -74, -40)]
-yellow = [(44, 61, -24, -5, 35, 67)]
+blue = [(18, 42, 16, 71, -93, -18)]
+yellow = [(41, 73, -17, 7, 47, 127)]
 
 #debug_flag = [True,True,True]
 debug_flag = [0,0,0]
@@ -186,7 +201,7 @@ while True:
         sendData(ang_array, dis_array, tf_array)
 
         #print(clock.fps())
-        #print(ball_data[2])
+        #print(ball_data[0])
 
     except (OSError, RuntimeError, AttributeError) as err:
         #print(err)
