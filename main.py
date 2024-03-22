@@ -33,11 +33,12 @@ print(Maix.utils.gc_heap_size())
 print(gc.mem_free())
 
 isAttacker = False
-machine_id = 0
+machine_id = 1
 
 if isAttacker:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=False)
     sensor.set_framesize(sensor.VGA)
+    mirror_r = 80
     if machine_id == 0:
         mirror_cx = 350
         mirror_cy = 240
@@ -49,6 +50,7 @@ if isAttacker:
 else:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
     sensor.set_framesize(sensor.QVGA)
+    mirror_r = 100
     if machine_id == 0:
         mirror_cx = 174
         mirror_cy = 122
@@ -78,7 +80,6 @@ header = b"\xff\xff\xfd\x00"
 debug_flag = [0, 0, 0]
 
 isCatch = False
-
 
 def getCam(threshold, obj_id):
     pixels_array = [0]
@@ -144,7 +145,8 @@ def getCam(threshold, obj_id):
     isFront = R_dir and L_dir
 
     if obj_id == 1:
-        pass
+        if(obj_angle > mirror_r):
+            enable = False
 
     if debug_flag[obj_id]:
         if isFront:
@@ -245,7 +247,7 @@ while True:
         sendData(ang_array, dis_array, tf_array)
 
         # print(clock.fps())
-        # print(ang_array)
+        #print(ball_data)
 
     except (OSError, RuntimeError, AttributeError) as err:
         # print(err)
