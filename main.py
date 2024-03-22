@@ -33,16 +33,16 @@ print(Maix.utils.gc_heap_size())
 print(gc.mem_free())
 
 isAttacker = False
-machine_id = 1
+machine_id = 3
 
 if isAttacker:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=False)
     sensor.set_framesize(sensor.VGA)
-    mirror_r = 80
+    mirror_r = 120
     if machine_id == 0:
         mirror_cx = 350
         mirror_cy = 240
-    else:
+    elif machine_id == 1:
         # 未調整
         mirror_cx = 310
         mirror_cy = 220
@@ -54,9 +54,13 @@ else:
     if machine_id == 0:
         mirror_cx = 174
         mirror_cy = 122
-    else:
+    elif machine_id == 1:
         mirror_cx = 156
         mirror_cy = 116
+    else:
+        mirror_cx = 162
+        mirror_cy = 132
+
 
 sensor.set_pixformat(sensor.RGB565)
 sensor.skip_frames(time=2000)
@@ -136,17 +140,19 @@ def getCam(threshold, obj_id):
         obj_distance = math.sqrt(math.pow(cx, 2) + math.pow(cy, 2))
 
     obj_angle = obj_angle - 180
+
     if obj_angle < 0:
-        obj_angle = obj_angle + 360
+
+        pass
+        #obj_angle = obj_angle + 360
 
     R_dir = edge_y_R > 0
     L_dir = edge_y_L < 0
 
     isFront = R_dir and L_dir
 
-    if obj_id == 1:
-        if(obj_angle > mirror_r):
-            enable = False
+    if(obj_angle > mirror_r):
+        enable = False
 
     if debug_flag[obj_id]:
         if isFront:
@@ -217,9 +223,9 @@ def sendData(_ang_array, _distace_array, _enable_array):
     uart.write(enable.to_bytes(1, "little"))
 
 
-orange = [(0, 69, 6, 67, 38, 85)]
-blue = [(18, 42, 16, 71, -93, -18)]
-yellow = [(41, 73, -17, 7, 47, 127)]
+orange = [(0, 100, 13, 103, 39, 101)]
+blue = [(0, 100, -116, 51, -93, -60)]
+yellow = [(0, 96, -36, -6, 44, 127)]
 
 #debug_flag = [True, True, True]
 debug_flag = [0,0,0]
