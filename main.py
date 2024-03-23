@@ -33,7 +33,7 @@ print(Maix.utils.gc_heap_size())
 print(gc.mem_free())
 
 isAttacker = False
-machine_id = 1
+machine_id = 0
 
 if isAttacker:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=False)
@@ -50,8 +50,8 @@ else:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
     sensor.set_framesize(sensor.QVGA)
     if machine_id == 0:
-        mirror_cx = 179
-        mirror_cy = 126
+        mirror_cx = 174
+        mirror_cy = 122
     else:
         mirror_cx = 162
         mirror_cy = 132
@@ -79,6 +79,7 @@ debug_flag = [0, 0, 0]
 
 isCatch = False
 
+mirror_r = img_w / 2
 
 def getCam(threshold, obj_id):
     pixels_array = [0]
@@ -143,8 +144,8 @@ def getCam(threshold, obj_id):
 
     isFront = R_dir and L_dir
 
-    if obj_id == 1:
-        pass
+    if obj_distance > mirror_r:
+        enable = False
 
     if debug_flag[obj_id]:
         if isFront:
@@ -219,8 +220,8 @@ orange = [(42, 92, 13, 74, 39, 127)]
 blue = [(0, 80, 24, 62, -86, -51)]
 yellow = [(69, 90, -20, 16, 18, 111)]
 
-# debug_flag = [True,True,True]
-debug_flag = [0, 0, 0]
+debug_flag = [True,True,True]
+#debug_flag = [0, 0, 0]
 
 while True:
     try:
