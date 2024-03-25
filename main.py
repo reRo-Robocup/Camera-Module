@@ -33,15 +33,17 @@ print(Maix.utils.gc_heap_size())
 print(gc.mem_free())
 
 isAttacker = False
+
 machine_id = 0
 
 if isAttacker:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=False)
     sensor.set_framesize(sensor.VGA)
+    mirror_r = 120
     if machine_id == 0:
         mirror_cx = 350
         mirror_cy = 240
-    else:
+    elif machine_id == 1:
         # 未調整
         mirror_cx = 310
         mirror_cy = 220
@@ -49,12 +51,14 @@ if isAttacker:
 else:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
     sensor.set_framesize(sensor.QVGA)
+    mirror_r = 100
     if machine_id == 0:
         mirror_cx = 174
         mirror_cy = 122
     else:
         mirror_cx = 163
         mirror_cy = 133
+
 
 sensor.set_pixformat(sensor.RGB565)
 sensor.skip_frames(time=2000)
@@ -133,6 +137,7 @@ def getCam(threshold, obj_id):
         obj_distance = math.sqrt(math.pow(cx, 2) + math.pow(cy, 2))
 
     obj_angle = obj_angle - 180
+
     if obj_angle < 0:
         obj_angle = obj_angle + 360
 
@@ -141,7 +146,7 @@ def getCam(threshold, obj_id):
 
     isFront = R_dir and L_dir
 
-    if obj_distance > mirror_r:
+    if obj_angle > mirror_r:
         enable = False
 
     if debug_flag[obj_id]:
