@@ -53,8 +53,8 @@ else:
         mirror_cx = 174
         mirror_cy = 122
     else:
-        mirror_cx = 162
-        mirror_cy = 132
+        mirror_cx = 163
+        mirror_cy = 133
 
 sensor.set_pixformat(sensor.RGB565)
 sensor.skip_frames(time=2000)
@@ -215,13 +215,18 @@ def sendData(_ang_array, _distace_array, _enable_array):
 
     uart.write(enable.to_bytes(1, "little"))
 
+# Lフィールド閾値 3/24/10:25
+#orange = [(0, 100, 6, 66, 29, 84)]
+#blue = [(0, 100, 5, 39, -86, -28)]
+#yellow = [(0, 100, -28, 45, 33, 96)]
 
-orange = [(42, 92, 13, 74, 39, 127)]
-blue = [(0, 80, 24, 62, -86, -51)]
-yellow = [(69, 90, -20, 16, 18, 111)]
+# Eフィールド閾値 3/2411:45
+orange = [(0, 100, 10, 61, 48, 91)]
+blue = [(0, 100, 6, 47, -85, -31)]
+yellow = [(0, 100, -37, -10, 35, 91)]
 
-debug_flag = [True,True,True]
-#debug_flag = [0, 0, 0]
+#debug_flag = [True,True,True]
+debug_flag = [0, 0, 0]
 
 while True:
     try:
@@ -246,7 +251,7 @@ while True:
         sendData(ang_array, dis_array, tf_array)
 
         # print(clock.fps())
-        # print(ball_data[0])
+        #print(ball_data)
 
     except (OSError, RuntimeError, AttributeError) as err:
         # print(err)
