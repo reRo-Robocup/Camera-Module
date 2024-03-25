@@ -33,7 +33,8 @@ print(Maix.utils.gc_heap_size())
 print(gc.mem_free())
 
 isAttacker = False
-machine_id = 3
+
+machine_id = 0
 
 if isAttacker:
     sensor.reset(freq=24000000, set_regs=True, dual_buff=False)
@@ -54,12 +55,9 @@ else:
     if machine_id == 0:
         mirror_cx = 174
         mirror_cy = 122
-    elif machine_id == 1:
-        mirror_cx = 156
-        mirror_cy = 116
     else:
-        mirror_cx = 162
-        mirror_cy = 132
+        mirror_cx = 163
+        mirror_cy = 133
 
 
 sensor.set_pixformat(sensor.RGB565)
@@ -85,6 +83,8 @@ debug_flag = [0, 0, 0]
 
 isCatch = False
 
+mirror_r = img_w / 2
+
 def getCam(threshold, obj_id):
     pixels_array = [0]
     cx_array = [0]
@@ -107,9 +107,6 @@ def getCam(threshold, obj_id):
         w_array.append(blob.w())
         h_array.append(blob.h())
         enable = True
-
-    # max_pixels = max(blob.pixels())
-    # index_id = blob.pixels().index(max_pixels)
 
     max_pixels = max(pixels_array)
     index_id = pixels_array.index(max_pixels)
@@ -142,16 +139,14 @@ def getCam(threshold, obj_id):
     obj_angle = obj_angle - 180
 
     if obj_angle < 0:
-
-        pass
-        #obj_angle = obj_angle + 360
+        obj_angle = obj_angle + 360
 
     R_dir = edge_y_R > 0
     L_dir = edge_y_L < 0
 
     isFront = R_dir and L_dir
 
-    if(obj_angle > mirror_r):
+    if obj_angle > mirror_r:
         enable = False
 
     if debug_flag[obj_id]:
@@ -222,13 +217,18 @@ def sendData(_ang_array, _distace_array, _enable_array):
 
     uart.write(enable.to_bytes(1, "little"))
 
+# Lフィールド閾値 3/24/10:25
+#orange = [(0, 100, 6, 66, 29, 84)]
+#blue = [(0, 100, 5, 39, -86, -28)]
+#yellow = [(0, 100, -28, 45, 33, 96)]
 
-orange = [(0, 100, 13, 103, 39, 101)]
-blue = [(0, 100, -116, 51, -93, -60)]
-yellow = [(0, 96, -36, -6, 44, 127)]
+# Eフィールド閾値 3/24/11:45
+orange = [(0, 100, 10, 61, 48, 91)]
+blue = [(0, 100, 6, 47, -85, -31)]
+yellow = [(0, 100, -37, -10, 35, 91)]
 
-#debug_flag = [True, True, True]
-debug_flag = [0,0,0]
+#debug_flag = [True,True,True]
+debug_flag = [0, 0, 0]
 
 while True:
     try:
