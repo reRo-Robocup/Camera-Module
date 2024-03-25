@@ -104,9 +104,6 @@ def getCam(threshold, obj_id):
         h_array.append(blob.h())
         enable = True
 
-    # max_pixels = max(blob.pixels())
-    # index_id = blob.pixels().index(max_pixels)
-
     max_pixels = max(pixels_array)
     index_id = pixels_array.index(max_pixels)
 
@@ -220,7 +217,7 @@ def sendData(_ang_array, _distace_array, _enable_array):
 #blue = [(0, 100, 5, 39, -86, -28)]
 #yellow = [(0, 100, -28, 45, 33, 96)]
 
-# Eフィールド閾値 3/2411:45
+# Eフィールド閾値 3/24/11:45
 orange = [(0, 100, 10, 61, 48, 91)]
 blue = [(0, 100, 6, 47, -85, -31)]
 yellow = [(0, 100, -37, -10, 35, 91)]
