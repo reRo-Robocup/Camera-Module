@@ -32,33 +32,11 @@ Maix.utils.gc_heap_size(0x800000)
 print(Maix.utils.gc_heap_size())
 print(gc.mem_free())
 
-isAttacker = False
+# 27000000は動作不安定
+# sensor.reset(freq=27000000, set_regs=True, dual_buff=True)
 
-machine_id = 0
-
-if isAttacker:
-    sensor.reset(freq=24000000, set_regs=True, dual_buff=False)
-    sensor.set_framesize(sensor.VGA)
-    mirror_r = 120
-    if machine_id == 0:
-        mirror_cx = 350
-        mirror_cy = 240
-    elif machine_id == 1:
-        # 未調整
-        mirror_cx = 310
-        mirror_cy = 220
-
-else:
-    sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
-    sensor.set_framesize(sensor.QVGA)
-    mirror_r = 100
-    if machine_id == 0:
-        mirror_cx = 174
-        mirror_cy = 122
-    else:
-        mirror_cx = 163
-        mirror_cy = 133
-
+sensor.reset(freq=24000000, set_regs=True, dual_buff=True)
+sensor.set_framesize(sensor.QVGA)
 
 sensor.set_pixformat(sensor.RGB565)
 sensor.skip_frames(time=2000)
@@ -68,22 +46,25 @@ sensor.set_saturation(2)
 # sensor.set_contrast(-2)
 # sensor.set_brightness(1)
 
-img_w = sensor.width()
-img_h = sensor.height()
-
 fm.register(35, fm.fpioa.UART1_RX, force=True)
 fm.register(34, fm.fpioa.UART1_TX, force=True)
 uart = UART(UART.UART1, 115200, 8, 0, 0, timeout=1000)
 
 clock = time.clock()
-
+img_w = sensor.width()
+img_h = sensor.height()
 header = b"\xff\xff\xfd\x00"
-
 debug_flag = [0, 0, 0]
 
-isCatch = False
-
+machine_id = 0
 mirror_r = img_w / 2
+
+if machine_id == 0:
+    mirror_cx = 174
+    mirror_cy = 122
+else:
+    mirror_cx = 163
+    mirror_cy = 133
 
 def getCam(threshold, obj_id):
     pixels_array = [0]
